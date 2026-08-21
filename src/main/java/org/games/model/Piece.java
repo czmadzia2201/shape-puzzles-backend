@@ -14,6 +14,7 @@ import java.util.List;
 public class Piece {
 
     @Id
+    @EqualsAndHashCode.Include
     private String id;
 
     @ManyToOne

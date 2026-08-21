@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,9 +21,9 @@ public class GameType {
     private String name;
 
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
-    private List<Piece> pieces;
+    private Set<Piece> pieces;
 
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
-    private List<Task> tasks;
+    private Set<Task> tasks;
 
 }

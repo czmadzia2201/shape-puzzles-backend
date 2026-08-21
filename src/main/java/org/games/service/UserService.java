@@ -1,10 +1,12 @@
 package org.games.service;
 
 import lombok.RequiredArgsConstructor;
+import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
 import org.games.model.UserData;
 import org.games.repository.TaskRepository;
 import org.games.repository.UserDataRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,8 +28,11 @@ public class UserService {
         user.setUsername(username);
         String passwordHash = passwordEncoder.encode(password);
         user.setPasswordHash(passwordHash);
-
-        return userDataRepository.save(user);
+        try {
+            return userDataRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UsernameAlreadyExistsException(username);
+        }
     }
 
     public Set<Task> getUserSolvedTasks(Authentication authentication, String gameTypeId) {
@@ -53,7 +58,7 @@ public class UserService {
         return userDataRepository
                 .findByUsernameAndActiveTrue(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User %s not found".formatted(authentication.getName())
+                        "Username %s not found".formatted(authentication.getName())
                 ));
     }
 }

@@ -1,14 +1,16 @@
 package org.games.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
 @Entity
+@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserData {
 
     @Id
@@ -19,6 +21,7 @@ public class UserData {
 
     private String passwordHash;
 
+    @Builder.Default
     private boolean active = true;
 
     @ManyToMany
