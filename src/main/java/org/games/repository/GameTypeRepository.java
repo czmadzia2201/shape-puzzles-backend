@@ -16,7 +16,7 @@ public interface GameTypeRepository extends JpaRepository<GameType, String> {
     @Query("SELECT g FROM GameType g WHERE g.name = :gameTypeId")
     Optional<GameType> findByIdWithDetails(String gameTypeId);
 
-    @Query("SELECT g.name FROM GameType g")
+    @Query("SELECT g.name FROM GameType g ORDER BY g.name")
     List<String> findAllNames();
 
 }

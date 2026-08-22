@@ -30,7 +30,7 @@ class GameServiceTest extends BaseRepositoryTest {
         List<String> gameTypes = gameService.getAllGameTypes();
         assertThat(gameTypes).isNotNull();
         assertThat(gameTypes).hasSize(3);
-        assertThat(gameTypes).containsExactlyInAnyOrder("tangram", "house", "t");
+        assertThat(gameTypes).containsExactly("house", "t", "tangram");
     }
 
     @Transactional

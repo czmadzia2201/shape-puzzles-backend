@@ -13,7 +13,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @SpringBootTest
-public class BaseRepositoryTest {
+public abstract class BaseRepositoryTest {
 
     @Container
     @ServiceConnection

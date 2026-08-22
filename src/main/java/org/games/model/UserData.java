@@ -3,6 +3,7 @@ package org.games.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -30,5 +31,6 @@ public class UserData {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "task_id")
     )
-    private Set<Task> solvedTasks;
+    @Builder.Default
+    private Set<Task> solvedTasks = new HashSet<>();
 }

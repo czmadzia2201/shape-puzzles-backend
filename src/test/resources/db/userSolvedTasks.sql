@@ -6,7 +6,7 @@ VALUES
     ('t');
 
 -- Tasks
-INSERT INTO task (id, game_type_name, vertices)
+INSERT INTO task (id, game_type_name, polygons)
 VALUES
     ('tangram_001', 'tangram', '[]'),
     ('tangram_002', 'tangram', '[]'),

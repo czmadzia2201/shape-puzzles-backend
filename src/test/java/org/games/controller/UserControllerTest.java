@@ -124,7 +124,7 @@ class UserControllerTest {
     @Test
     void shouldSyncSolvedTasks() throws Exception {
         Authentication authentication = getAuthentication("user1");
-        SyncSolvedTasksRequest request = new SyncSolvedTasksRequest(List.of("t01, h01, t05"));
+        SyncSolvedTasksRequest request = new SyncSolvedTasksRequest(List.of("t01", "h01", "t05"));
         mockMvc.perform(post("/users/me/solved-tasks/sync")
                         .principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)

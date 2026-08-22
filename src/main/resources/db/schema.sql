@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS task
 (
     id VARCHAR(25) NOT NULL,
     game_type_name VARCHAR(25) NOT NULL,
-    vertices JSONB NOT NULL,
+    polygons JSONB NOT NULL,
     CONSTRAINT task_pkey PRIMARY KEY (id),
     CONSTRAINT game_type_fkey FOREIGN KEY (game_type_name) REFERENCES game_type (name)
 );

@@ -28,7 +28,7 @@ VALUES
 
 
 -- Tasks: tangram
-INSERT INTO task (id, game_type_name, vertices)
+INSERT INTO task (id, game_type_name, polygons)
 VALUES
     ('tangram_001', 'tangram', '[]'),
     ('tangram_002', 'tangram', '[]'),
@@ -36,13 +36,13 @@ VALUES
 
 
 -- Tasks: house
-INSERT INTO task (id, game_type_name, vertices)
+INSERT INTO task (id, game_type_name, polygons)
 VALUES
     ('house_001', 'house', '[]'),
     ('house_002', 'house', '[]');
 
 
 -- Tasks: T
-INSERT INTO task (id, game_type_name, vertices)
+INSERT INTO task (id, game_type_name, polygons)
 VALUES
     ('t_001', 't', '[]');

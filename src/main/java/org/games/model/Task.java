@@ -26,5 +26,5 @@ public class Task {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private List<Point> vertices;
+    private List<List<Point>> polygons;
 }
