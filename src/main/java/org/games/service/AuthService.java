@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +22,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final JwtDecoder jwtDecoder;
+    private final JwtDecoder refreshJwtDecoder;
     private final UserDataRepository userDataRepository;
 
     public LoginResponse login(LoginRequest request) {
@@ -39,7 +40,13 @@ public class AuthService {
     }
 
     public RefreshResponse refresh(RefreshRequest request) {
-        Jwt jwt = jwtDecoder.decode(request.refreshToken());
+        Jwt jwt;
+
+        try {
+            jwt = refreshJwtDecoder.decode(request.refreshToken());
+        } catch (JwtException ex) {
+            throw new BadCredentialsException("Invalid or expired refresh token", ex);
+        }
 
         String tokenType = jwt.getClaimAsString("token_type");
         if (!"refresh".equals(tokenType)) {

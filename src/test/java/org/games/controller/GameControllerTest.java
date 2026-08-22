@@ -31,13 +31,11 @@ class GameControllerTest {
     @Test
     void shouldReturnAllGameTypes() throws Exception {
         when(gameService.getAllGameTypes()).thenReturn(
-            List.of(new GameType("game_type_1", Set.of(), Set.of()),
-                    new GameType("game_type_2", Set.of(), Set.of()),
-                    new GameType("game_type_3", Set.of(), Set.of()))
+            List.of("game_type_1", "game_type_2", "game_type_3")
         );
         mockMvc.perform(get("/game-types"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("game_type_1"));
+                .andExpect(jsonPath("$[0]").value("game_type_1"));
     }
 
     @Test

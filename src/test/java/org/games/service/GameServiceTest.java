@@ -27,10 +27,10 @@ class GameServiceTest extends BaseRepositoryTest {
     @Transactional
     @Test
     void shouldGetAllGameTypes() {
-        List<GameType> gameTypes = gameService.getAllGameTypes();
+        List<String> gameTypes = gameService.getAllGameTypes();
         assertThat(gameTypes).isNotNull();
         assertThat(gameTypes).hasSize(3);
-        assertThat(gameTypes).extracting(GameType::getName).containsExactlyInAnyOrder("tangram", "house", "t");
+        assertThat(gameTypes).containsExactlyInAnyOrder("tangram", "house", "t");
     }
 
     @Transactional

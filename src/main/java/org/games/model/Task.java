@@ -1,5 +1,6 @@
 package org.games.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -20,6 +21,7 @@ public class Task {
 
     @ManyToOne
     @JoinColumn(name = "game_type_name")
+    @JsonIgnore
     private GameType gameType;
 
     @JdbcTypeCode(SqlTypes.JSON)

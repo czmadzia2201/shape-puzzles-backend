@@ -15,7 +15,7 @@ public class GameController {
     private final GameService gameService;
 
     @GetMapping
-    public List<GameType> getAllGameTypes() {
+    public List<String> getAllGameTypes() {
         return gameService.getAllGameTypes();
     }
 

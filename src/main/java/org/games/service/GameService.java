@@ -14,8 +14,8 @@ public class GameService {
 
     private final GameTypeRepository gameTypeRepository;
 
-    public List<GameType> getAllGameTypes() {
-        return gameTypeRepository.findAll();
+    public List<String> getAllGameTypes() {
+        return gameTypeRepository.findAllNames();
     }
 
     public GameType getGameType(String gameTypeId) {

@@ -92,7 +92,7 @@ class UserServiceTest extends BaseRepositoryTest {
     public void shouldThrowWhenUserDoesNotExist() {
         assertThatThrownBy(() -> userService.deactivateUser(getAuthentication("user1")))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage("User user1 not found");
+                .hasMessage("Username user1 not found");
     }
 
     @Test
@@ -102,7 +102,7 @@ class UserServiceTest extends BaseRepositoryTest {
         userService.deactivateUser(authentication);
         assertThatThrownBy(() -> userService.deactivateUser(authentication))
                 .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage("User user1 not found");
+                .hasMessage("Username user1 not found");
     }
 
     @Transactional

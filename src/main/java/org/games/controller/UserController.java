@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.games.dto.RegisterUserRequest;
+import org.games.dto.RegisterUserResponse;
 import org.games.dto.SyncSolvedTasksRequest;
 import org.games.model.Task;
 import org.games.model.UserData;
@@ -21,8 +22,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserData registerUser(@RequestBody @Valid RegisterUserRequest request) {
-        return userService.registerUser(request.username(), request.password());
+    public RegisterUserResponse registerUser(@RequestBody @Valid RegisterUserRequest request) {
+        UserData registerUserData = userService.registerUser(request.username(), request.password());
+        return new RegisterUserResponse(registerUserData.getUsername());
     }
 
     @GetMapping("/me/solved-tasks/{gameTypeId}")

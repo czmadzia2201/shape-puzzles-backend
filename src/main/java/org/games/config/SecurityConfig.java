@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,11 +19,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
@@ -34,7 +34,9 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                            @Qualifier("accessJwtDecoder") JwtDecoder accessJwtDecoder
+    ) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
@@ -46,7 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/users/me/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwt -> jwt.decoder(accessJwtDecoder)))
                 .build();
     }
 
@@ -81,7 +84,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(SecretKey secretKey) {
+    JwtDecoder accessJwtDecoder(SecretKey secretKey) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
+                .withSecretKey(secretKey)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
+
+        OAuth2TokenValidator<Jwt> tokenTypeValidator =
+                new JwtClaimValidator<>(
+                        "token_type",
+                        "access"::equals
+                );
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(
+                        JwtValidators.createDefault(),
+                        tokenTypeValidator
+                )
+        );
+
+        return decoder;
+    }
+
+    @Bean
+    JwtDecoder refreshJwtDecoder(SecretKey secretKey) {
         return NimbusJwtDecoder
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)

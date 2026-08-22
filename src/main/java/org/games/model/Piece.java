@@ -1,5 +1,6 @@
 package org.games.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Piece {
 
     @Id
@@ -19,6 +21,7 @@ public class Piece {
 
     @ManyToOne
     @JoinColumn(name = "game_type_name")
+    @JsonIgnore
     private GameType gameType;
 
     @JdbcTypeCode(SqlTypes.JSON)
