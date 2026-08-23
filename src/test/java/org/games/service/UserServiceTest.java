@@ -1,5 +1,6 @@
 package org.games.service;
 
+import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
 import org.games.model.UserData;
@@ -12,7 +13,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
@@ -60,11 +60,10 @@ class UserServiceTest extends BaseRepositoryTest {
 
     @Test
     public void shouldRegisterUser_inactiveUsersWithSameUsername() {
-        Authentication authentication = getAuthentication("user1");
         UserData user1 = userService.registerUser("user1", "password1");
-        userService.deactivateUser(authentication);
+        userService.deactivateUser(getAuthentication(user1.getId()));
         UserData user2 = assertDoesNotThrow(() -> userService.registerUser("user1", "password2"));
-        userService.deactivateUser(authentication);
+        userService.deactivateUser(getAuthentication(user2.getId()));
         UserData user3 = assertDoesNotThrow(() -> userService.registerUser("user1", "password3"));
 
         UserData savedUser1 = userDataRepository.findById(user1.getId()).get();
@@ -83,26 +82,26 @@ class UserServiceTest extends BaseRepositoryTest {
     @Test
     public void shouldDeactivateUser() {
         UserData user = userService.registerUser("user1", "password1");
-        userService.deactivateUser(getAuthentication("user1"));
+        userService.deactivateUser(getAuthentication(user.getId()));
         UserData savedUser = userDataRepository.findById(user.getId()).get();
         assertThat(savedUser.isActive()).isFalse();
     }
 
     @Test
     public void shouldThrowWhenUserDoesNotExist() {
-        assertThatThrownBy(() -> userService.deactivateUser(getAuthentication("user1")))
-                .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage("Username user1 not found");
+        assertThatThrownBy(() -> userService.deactivateUser(getAuthentication(1L)))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User ID 1 not found");
     }
 
     @Test
     public void shouldThrowWhenUserIsNotActive() {
-        Authentication authentication = getAuthentication("user1");
-        userService.registerUser("user1", "password1");
+        UserData user = userService.registerUser("user1", "password1");
+        Authentication authentication = getAuthentication(user.getId());
         userService.deactivateUser(authentication);
         assertThatThrownBy(() -> userService.deactivateUser(authentication))
-                .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessage("Username user1 not found");
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User ID %s not found".formatted(user.getId()));
     }
 
     @Transactional
@@ -113,7 +112,8 @@ class UserServiceTest extends BaseRepositoryTest {
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     public void shouldFindUserSolvedTasks(String username, String gameTypeId, int size, List<String> taskIds) {
-        Set<Task> userTasks = userService.getUserSolvedTasks(getAuthentication(username), gameTypeId);
+        UserData user = userDataRepository.findByUsernameAndActiveTrue(username).get();
+        Set<Task> userTasks = userService.getUserSolvedTasks(getAuthentication(user.getId()), gameTypeId);
         assertThat(userTasks).isNotNull();
         assertThat(userTasks).hasSize(size);
         assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrderElementsOf(taskIds);
@@ -137,7 +137,8 @@ class UserServiceTest extends BaseRepositoryTest {
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     void shouldSyncSolvedTasks(String gameTypeId, int size, List<String> taskIds) {
-        Authentication authentication = getAuthentication("user1");
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
         userService.syncSolvedTasks(authentication, List.of("tangram_003", "tangram_002", "tangram_003", "house_001", "house_003", "t_001"));
         Set<Task> userTasks = userService.getUserSolvedTasks(authentication, gameTypeId);
         assertThat(userTasks).isNotNull();
@@ -153,8 +154,8 @@ class UserServiceTest extends BaseRepositoryTest {
         );
     }
 
-    private Authentication getAuthentication(String username) {
-        return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+    private Authentication getAuthentication(Long id) {
+        return new UsernamePasswordAuthenticationToken(id.toString(), null, Collections.emptyList());
     }
 
 }

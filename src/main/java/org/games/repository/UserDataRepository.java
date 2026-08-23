@@ -12,10 +12,12 @@ public interface UserDataRepository extends JpaRepository<UserData, Long> {
 
     Optional<UserData> findByUsernameAndActiveTrue(String username);
 
+    Optional<UserData> findByIdAndActiveTrue(Long id);
+
     @Query("""
     SELECT t FROM UserData u JOIN u.solvedTasks t
-    WHERE u.username = :username AND u.active = true AND t.gameType.name = :gameType
+    WHERE u.id = :userId AND u.active = true AND t.gameType.name = :gameType
     """)
-    Set<Task> findUserSolvedTasksByGameType(String username, String gameType);
+    Set<Task> findUserSolvedTasksByGameType(Long userId, String gameType);
 
 }

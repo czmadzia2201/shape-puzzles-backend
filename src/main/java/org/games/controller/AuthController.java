@@ -1,5 +1,6 @@
 package org.games.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.games.dto.LoginRequest;
 import org.games.dto.LoginResponse;
@@ -19,12 +20,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@RequestBody @Valid LoginRequest request) {
         return authService.login(request);
     }
 
     @PostMapping("/refresh")
-    public RefreshResponse refresh(@RequestBody RefreshRequest request) {
+    public RefreshResponse refresh(@RequestBody @Valid RefreshRequest request) {
         return authService.refresh(request);
     }
 

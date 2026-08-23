@@ -1,7 +1,7 @@
 package org.games.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.games.model.UserData;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -18,11 +18,12 @@ public class JwtService {
 
     private final JwtEncoder jwtEncoder;
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(UserData user) {
         Instant now = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(username)
+                .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .issuedAt(now)
                 .claim("token_type", "access")
                 .expiresAt(now.plus(4, ChronoUnit.HOURS))
@@ -35,11 +36,12 @@ public class JwtService {
                 .getTokenValue();
     }
 
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(UserData user) {
         Instant now = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(username)
+                .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .issuedAt(now)
                 .claim("token_type", "refresh")
                 .expiresAt(now.plus(7, ChronoUnit.DAYS))

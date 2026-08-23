@@ -1,6 +1,7 @@
 package org.games.service;
 
 import lombok.RequiredArgsConstructor;
+import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
 import org.games.model.UserData;
@@ -8,7 +9,6 @@ import org.games.repository.TaskRepository;
 import org.games.repository.UserDataRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +36,8 @@ public class UserService {
     }
 
     public Set<Task> getUserSolvedTasks(Authentication authentication, String gameTypeId) {
-        String username = authentication.getName();
-        return userDataRepository.findUserSolvedTasksByGameType(username, gameTypeId);
+        Long userId = Long.valueOf(authentication.getName());
+        return userDataRepository.findUserSolvedTasksByGameType(userId, gameTypeId);
     }
 
     public void deactivateUser(Authentication authentication) {
@@ -55,10 +55,10 @@ public class UserService {
     }
 
     private UserData getUserData(Authentication authentication) {
-        return userDataRepository
-                .findByUsernameAndActiveTrue(authentication.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Username %s not found".formatted(authentication.getName())
+        Long userId = Long.valueOf(authentication.getName());
+        return userDataRepository.findByIdAndActiveTrue(userId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User ID %s not found".formatted(userId)
                 ));
     }
 }

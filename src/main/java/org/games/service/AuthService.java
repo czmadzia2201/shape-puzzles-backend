@@ -5,12 +5,13 @@ import org.games.dto.LoginRequest;
 import org.games.dto.LoginResponse;
 import org.games.dto.RefreshRequest;
 import org.games.dto.RefreshResponse;
+import org.games.exception.UserNotFoundException;
+import org.games.model.UserData;
 import org.games.repository.UserDataRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -33,8 +34,13 @@ public class AuthService {
                 )
         );
 
-        String accessToken = jwtService.generateAccessToken(authentication.getName());
-        String refreshToken = jwtService.generateRefreshToken(authentication.getName());
+        UserData user = userDataRepository.findByUsernameAndActiveTrue(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User %s not found".formatted(authentication.getName())
+                ));
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
         return new LoginResponse(accessToken, refreshToken);
     }
@@ -50,17 +56,18 @@ public class AuthService {
 
         String tokenType = jwt.getClaimAsString("token_type");
         if (!"refresh".equals(tokenType)) {
-            throw new BadCredentialsException("Invalid refresh token");
+            throw new BadCredentialsException("Access token cannot be used as refresh token");
         }
 
-        String username = jwt.getSubject();
+        Long userId = Long.valueOf(jwt.getSubject());
+        String username = jwt.getClaimAsString("username");
 
-        userDataRepository.findByUsernameAndActiveTrue(username)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "User %s not found".formatted(username)
+        UserData user = userDataRepository.findByIdAndActiveTrue(userId)
+                .orElseThrow(() -> new BadCredentialsException(
+                        "Invalid refresh token for user %s".formatted(username)
                 ));
 
-        String accessToken = jwtService.generateAccessToken(username);
+        String accessToken = jwtService.generateAccessToken(user);
 
         return new RefreshResponse(accessToken);
     }

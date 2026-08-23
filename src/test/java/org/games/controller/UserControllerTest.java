@@ -3,6 +3,7 @@ package org.games.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.games.dto.RegisterUserRequest;
 import org.games.dto.SyncSolvedTasksRequest;
+import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.GameType;
 import org.games.model.Task;
@@ -15,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -88,7 +88,7 @@ class UserControllerTest {
 
     @Test
     void shouldDeleteUser() throws Exception {
-        Authentication authentication = getAuthentication("user1");
+        Authentication authentication = getAuthentication(1L);
         mockMvc.perform(delete("/users/me")
                         .principal(authentication))
                 .andExpect(status().isOk());
@@ -97,8 +97,8 @@ class UserControllerTest {
 
     @Test
     void shouldNotDeleteUser_usernameNotFound() throws Exception {
-        Authentication authentication = getAuthentication("user1");
-        doThrow(new UsernameNotFoundException("Username user1 not found"))
+        Authentication authentication = getAuthentication(1L);
+        doThrow(new UserNotFoundException("User ID 1 not found"))
                 .when(userService).deactivateUser(authentication);
         mockMvc.perform(delete("/users/me")
                         .principal(authentication))
@@ -107,7 +107,7 @@ class UserControllerTest {
 
     @Test
     void shouldGetUserSolvedTasks() throws Exception {
-        Authentication authentication = getAuthentication("user1");
+        Authentication authentication = getAuthentication(1L);
         GameType tangram = new GameType("tangram", Set.of(), Set.of());
         when(userService.getUserSolvedTasks(authentication, "tangram")).thenReturn(Set.of(
                 new Task("tg1", tangram, List.of()),
@@ -123,7 +123,7 @@ class UserControllerTest {
 
     @Test
     void shouldSyncSolvedTasks() throws Exception {
-        Authentication authentication = getAuthentication("user1");
+        Authentication authentication = getAuthentication(1L);
         SyncSolvedTasksRequest request = new SyncSolvedTasksRequest(List.of("t01", "h01", "t05"));
         mockMvc.perform(post("/users/me/solved-tasks/sync")
                         .principal(authentication)
@@ -133,8 +133,20 @@ class UserControllerTest {
         verify(userService).syncSolvedTasks(authentication, request.taskIds());
     }
 
-    private Authentication getAuthentication(String username) {
-        return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+    @Test
+    void shouldNotSyncSolvedTasks_nullTaskList() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        SyncSolvedTasksRequest request = new SyncSolvedTasksRequest(null);
+        mockMvc.perform(post("/users/me/solved-tasks/sync")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(userService);
+    }
+
+    private Authentication getAuthentication(Long id) {
+        return new UsernamePasswordAuthenticationToken(id.toString(), null, Collections.emptyList());
     }
 
 }

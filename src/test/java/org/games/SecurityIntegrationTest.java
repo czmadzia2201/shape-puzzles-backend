@@ -134,7 +134,7 @@ class SecurityIntegrationTest extends BaseRepositoryTest {
     void shouldNotRefreshWithExpiredToken() throws Exception {
         mockMvc.perform(post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json(new RefreshRequest(expiredRefreshToken("player")))))
+                        .content(json(new RefreshRequest(expiredRefreshToken()))))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -167,10 +167,11 @@ class SecurityIntegrationTest extends BaseRepositoryTest {
                 .content(json(new RegisterUserRequest(username, password))));
     }
 
-    private String expiredRefreshToken(String username) {
+    private String expiredRefreshToken() {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(username)
+                .subject("1")
+                .claim("username", "player")
                 .issuedAt(now.minusSeconds(120))
                 .expiresAt(now.minusSeconds(60))
                 .claim("token_type", "refresh")

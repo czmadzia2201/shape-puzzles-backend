@@ -23,8 +23,8 @@ public class UserController {
 
     @PostMapping
     public RegisterUserResponse registerUser(@RequestBody @Valid RegisterUserRequest request) {
-        UserData registerUserData = userService.registerUser(request.username(), request.password());
-        return new RegisterUserResponse(registerUserData.getUsername());
+        UserData user = userService.registerUser(request.username(), request.password());
+        return new RegisterUserResponse(user.getUsername());
     }
 
     @GetMapping("/me/solved-tasks/{gameTypeId}")
@@ -41,7 +41,7 @@ public class UserController {
 
     @PostMapping("/me/solved-tasks/sync")
     @SecurityRequirement(name = "bearerAuth")
-    public void syncSolvedTasks(Authentication authentication, @RequestBody SyncSolvedTasksRequest request) {
+    public void syncSolvedTasks(Authentication authentication, @RequestBody @Valid SyncSolvedTasksRequest request) {
         userService.syncSolvedTasks(authentication, request.taskIds());
     }
 }
