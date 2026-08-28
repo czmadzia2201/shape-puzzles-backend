@@ -59,6 +59,18 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     @Test
+    public void shouldCheckIfUsernameIsAvailable() {
+        boolean check1 = userService.isUsernameAvailable("user1");
+        assertThat(check1).isTrue();
+        UserData user = userService.registerUser("user1", "password1");
+        boolean check2 = userService.isUsernameAvailable("user1");
+        assertThat(check2).isFalse();
+        userService.deactivateUser(getAuthentication(user.getId()));
+        boolean check3 = userService.isUsernameAvailable("user1");
+        assertThat(check3).isTrue();
+    }
+
+    @Test
     public void shouldRegisterUser_inactiveUsersWithSameUsername() {
         UserData user1 = userService.registerUser("user1", "password1");
         userService.deactivateUser(getAuthentication(user1.getId()));

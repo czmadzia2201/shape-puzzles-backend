@@ -1,9 +1,9 @@
 -- Game types
-INSERT INTO game_type (name)
+INSERT INTO game_type (name, display_name)
 VALUES
-    ('tangram'),
-    ('house'),
-    ('t');
+    ('tangram', 'Tangram'),
+    ('house', 'House'),
+    ('t', 'T');
 
 -- Tasks
 INSERT INTO task (id, game_type_name, polygons)

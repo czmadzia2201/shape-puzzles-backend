@@ -1,6 +1,7 @@
 package org.games.service;
 
 import org.games.BaseRepositoryTest;
+import org.games.dto.GameTypeSummaryDto;
 import org.games.model.GameType;
 import org.games.model.Piece;
 import org.games.model.Task;
@@ -27,10 +28,10 @@ class GameServiceTest extends BaseRepositoryTest {
     @Transactional
     @Test
     void shouldGetAllGameTypes() {
-        List<String> gameTypes = gameService.getAllGameTypes();
+        List<GameTypeSummaryDto> gameTypes = gameService.getAllGameTypes();
         assertThat(gameTypes).isNotNull();
         assertThat(gameTypes).hasSize(3);
-        assertThat(gameTypes).containsExactly("house", "t", "tangram");
+        assertThat(gameTypes).extracting(GameTypeSummaryDto::name).containsExactly("house", "t", "tangram");
     }
 
     @Transactional

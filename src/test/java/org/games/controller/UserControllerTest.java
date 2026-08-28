@@ -87,6 +87,14 @@ class UserControllerTest {
     }
 
     @Test
+    void shouldCheckIfUsernameIsAvailable() throws Exception {
+        when(userService.isUsernameAvailable("user1")).thenReturn(true);
+        mockMvc.perform(get("/users?username=user1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("true"));
+    }
+
+    @Test
     void shouldDeleteUser() throws Exception {
         Authentication authentication = getAuthentication(1L);
         mockMvc.perform(delete("/users/me")
@@ -108,7 +116,7 @@ class UserControllerTest {
     @Test
     void shouldGetUserSolvedTasks() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        GameType tangram = new GameType("tangram", Set.of(), Set.of());
+        GameType tangram = new GameType("tangram", "Tangram", Set.of(), Set.of());
         when(userService.getUserSolvedTasks(authentication, "tangram")).thenReturn(Set.of(
                 new Task("tg1", tangram, List.of()),
                 new Task("tg2", tangram, List.of()),

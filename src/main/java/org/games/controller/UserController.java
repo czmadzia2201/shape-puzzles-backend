@@ -27,6 +27,11 @@ public class UserController {
         return new RegisterUserResponse(user.getUsername());
     }
 
+    @GetMapping
+    public boolean isUsernameAvailable(@RequestParam String username) {
+        return userService.isUsernameAvailable(username);
+    }
+
     @GetMapping("/me/solved-tasks/{gameTypeId}")
     @SecurityRequirement(name = "bearerAuth")
     public Set<Task> findUserSolvedTasks(Authentication authentication, @PathVariable String gameTypeId) {
@@ -44,4 +49,5 @@ public class UserController {
     public void syncSolvedTasks(Authentication authentication, @RequestBody @Valid SyncSolvedTasksRequest request) {
         userService.syncSolvedTasks(authentication, request.taskIds());
     }
+
 }

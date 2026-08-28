@@ -1,6 +1,7 @@
 package org.games.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.games.dto.GameTypeSummaryDto;
 import org.games.model.GameType;
 import org.games.service.GameService;
 import org.junit.jupiter.api.Test;
@@ -30,18 +31,23 @@ class GameControllerTest {
 
     @Test
     void shouldReturnAllGameTypes() throws Exception {
-        when(gameService.getAllGameTypes()).thenReturn(
-            List.of("game_type_1", "game_type_2", "game_type_3")
+        when(gameService.getAllGameTypes()).thenReturn(List.of(
+                new GameTypeSummaryDto("game_type_1", "GameType1"),
+                new GameTypeSummaryDto("game_type_2", "GameType2"),
+                new GameTypeSummaryDto("game_type_3", "GameType3")
+                )
         );
         mockMvc.perform(get("/game-types"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value("game_type_1"));
+                .andExpect(jsonPath("$[0].name").value("game_type_1"))
+                .andExpect(jsonPath("$[0].displayName").value("GameType1"));
+        ;
     }
 
     @Test
     void shouldReturnGameTypeById() throws Exception {
         when(gameService.getGameType("game_type_1"))
-                .thenReturn(new GameType("game_type_1", Set.of(), Set.of()));
+                .thenReturn(new GameType("game_type_1", "GameType1", Set.of(), Set.of()));
         mockMvc.perform(get("/game-types/game_type_1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("game_type_1"));

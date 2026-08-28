@@ -35,6 +35,10 @@ public class UserService {
         }
     }
 
+    public boolean isUsernameAvailable(String username) {
+        return userDataRepository.findByUsernameAndActiveTrue(username).isEmpty();
+    }
+
     public Set<Task> getUserSolvedTasks(Authentication authentication, String gameTypeId) {
         Long userId = Long.valueOf(authentication.getName());
         return userDataRepository.findUserSolvedTasksByGameType(userId, gameTypeId);

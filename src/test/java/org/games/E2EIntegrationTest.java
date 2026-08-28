@@ -1,13 +1,7 @@
 package org.games;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.games.dto.LoginRequest;
-import org.games.dto.LoginResponse;
-import org.games.dto.RefreshRequest;
-import org.games.dto.RefreshResponse;
-import org.games.dto.RegisterUserRequest;
-import org.games.dto.RegisterUserResponse;
-import org.games.dto.SyncSolvedTasksRequest;
+import org.games.dto.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,11 +28,11 @@ class E2EIntegrationTest extends BaseRepositoryTest {
 
     @Test
     void shouldCompleteUserJourney() {
-        ResponseEntity<String[]> gameTypesResponse =
-                restTemplate.getForEntity("/game-types", String[].class);
+        ResponseEntity<GameTypeSummaryDto[]> gameTypesResponse =
+                restTemplate.getForEntity("/game-types", GameTypeSummaryDto[].class);
 
         assertThat(gameTypesResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(gameTypesResponse.getBody()).contains("tangram");
+        assertThat(gameTypesResponse.getBody()).extracting(GameTypeSummaryDto::name).contains("tangram");
 
         ResponseEntity<RegisterUserResponse> registerResponse = restTemplate.postForEntity(
                 "/users",

@@ -20,6 +20,8 @@ public class GameType {
     @Id
     private String name;
 
+    private String displayName;
+
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
     private Set<Piece> pieces;
 

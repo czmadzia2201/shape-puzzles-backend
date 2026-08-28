@@ -1,6 +1,7 @@
 package org.games.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.games.dto.GameTypeSummaryDto;
 import org.games.model.GameType;
 import org.games.service.GameService;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class GameController {
     private final GameService gameService;
 
     @GetMapping
-    public List<String> getAllGameTypes() {
+    public List<GameTypeSummaryDto> getAllGameTypes() {
         return gameService.getAllGameTypes();
     }
 
