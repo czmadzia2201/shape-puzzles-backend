@@ -38,6 +38,11 @@ public class UserController {
         return userService.getUserSolvedTasks(authentication, gameTypeId);
     }
 
+    @GetMapping("/me")
+    @SecurityRequirement(name = "bearerAuth")
+    public void checkCurrentUser() {
+    }
+
     @DeleteMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
     public void deleteUser(Authentication authentication) {

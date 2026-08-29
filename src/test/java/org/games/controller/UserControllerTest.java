@@ -104,6 +104,15 @@ class UserControllerTest {
     }
 
     @Test
+    void shouldCheckCurrentUser() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        mockMvc.perform(get("/users/me")
+                        .principal(authentication))
+                .andExpect(status().isOk());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
     void shouldNotDeleteUser_usernameNotFound() throws Exception {
         Authentication authentication = getAuthentication(1L);
         doThrow(new UserNotFoundException("User ID 1 not found"))

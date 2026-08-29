@@ -40,7 +40,7 @@ class UserServiceTest extends BaseRepositoryTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    public void shouldRegisterUser() {
+    void shouldRegisterUser() {
         UserData user = userService.registerUser("user1", "password1");
         assertThat(user).isNotNull();
         UserData savedUser = userDataRepository.findById(user.getId()).get();
@@ -51,15 +51,7 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void shouldThrowWhenUserExists() {
-        userService.registerUser("user1", "password1");
-        assertThatThrownBy(() -> userService.registerUser("user1", "password2"))
-                .isInstanceOf(UsernameAlreadyExistsException.class)
-                .hasMessageContaining("Username user1 already exists");
-    }
-
-    @Test
-    public void shouldCheckIfUsernameIsAvailable() {
+    void shouldCheckIfUsernameIsAvailable() {
         boolean check1 = userService.isUsernameAvailable("user1");
         assertThat(check1).isTrue();
         UserData user = userService.registerUser("user1", "password1");
@@ -71,7 +63,15 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void shouldRegisterUser_inactiveUsersWithSameUsername() {
+    void shouldThrowWhenUserExists() {
+        userService.registerUser("user1", "password1");
+        assertThatThrownBy(() -> userService.registerUser("user1", "password2"))
+                .isInstanceOf(UsernameAlreadyExistsException.class)
+                .hasMessageContaining("Username user1 already exists");
+    }
+
+    @Test
+    void shouldRegisterUser_inactiveUsersWithSameUsername() {
         UserData user1 = userService.registerUser("user1", "password1");
         userService.deactivateUser(getAuthentication(user1.getId()));
         UserData user2 = assertDoesNotThrow(() -> userService.registerUser("user1", "password2"));
@@ -92,7 +92,7 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void shouldDeactivateUser() {
+    void shouldDeactivateUser() {
         UserData user = userService.registerUser("user1", "password1");
         userService.deactivateUser(getAuthentication(user.getId()));
         UserData savedUser = userDataRepository.findById(user.getId()).get();
@@ -100,14 +100,14 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     @Test
-    public void shouldThrowWhenUserDoesNotExist() {
+    void shouldThrowWhenUserDoesNotExist() {
         assertThatThrownBy(() -> userService.deactivateUser(getAuthentication(1L)))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User ID 1 not found");
     }
 
     @Test
-    public void shouldThrowWhenUserIsNotActive() {
+    void shouldThrowWhenUserIsNotActive() {
         UserData user = userService.registerUser("user1", "password1");
         Authentication authentication = getAuthentication(user.getId());
         userService.deactivateUser(authentication);
@@ -123,7 +123,7 @@ class UserServiceTest extends BaseRepositoryTest {
             scripts = "/db/userSolvedTasks.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
-    public void shouldFindUserSolvedTasks(String username, String gameTypeId, int size, List<String> taskIds) {
+    void shouldFindUserSolvedTasks(String username, String gameTypeId, int size, List<String> taskIds) {
         UserData user = userDataRepository.findByUsernameAndActiveTrue(username).get();
         Set<Task> userTasks = userService.getUserSolvedTasks(getAuthentication(user.getId()), gameTypeId);
         assertThat(userTasks).isNotNull();

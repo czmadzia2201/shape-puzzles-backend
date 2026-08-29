@@ -53,6 +53,9 @@ class SecurityIntegrationTest extends BaseRepositoryTest {
 
         mockMvc.perform(delete("/users/me"))
                 .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/users/me"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
