@@ -44,7 +44,7 @@ public class JwtService {
                 .claim("username", user.getUsername())
                 .issuedAt(now)
                 .claim("token_type", "refresh")
-                .expiresAt(now.plus(7, ChronoUnit.DAYS))
+                .expiresAt(now.plus(2, ChronoUnit.DAYS))
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

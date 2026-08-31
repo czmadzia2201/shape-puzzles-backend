@@ -38,6 +38,11 @@ public class UserController {
         return userService.getUserSolvedTasks(authentication, gameTypeId);
     }
 
+    @PostMapping("/solved-tasks/{taskId}")
+    public boolean validateAndSaveSolution(Authentication authentication, @PathVariable String taskId) {
+        return userService.validateAndSaveSolution(authentication, taskId);
+    }
+
     @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
     public void checkCurrentUser() {
