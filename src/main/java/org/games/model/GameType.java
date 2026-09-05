@@ -1,14 +1,14 @@
 package org.games.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,5 +27,11 @@ public class GameType {
 
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
     private Set<Task> tasks;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<Point> baseShape;
+
+    private double unitSize;
 
 }

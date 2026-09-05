@@ -1,5 +1,6 @@
 package org.games.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
@@ -164,6 +165,66 @@ class UserServiceTest extends BaseRepositoryTest {
                 Arguments.of("house", 1, List.of("house_001")),
                 Arguments.of("t", 1, List.of("t_001"))
         );
+    }
+
+    @Sql(
+            scripts = "/db/userSolvedTasks.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Transactional
+    @Test
+    void shouldValidateAndSaveSolution() {
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
+        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_003");
+        assertThat(response).isTrue();
+        Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
+        assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002", "tangram_003");
+    }
+
+    @Sql(
+            scripts = "/db/userSolvedTasks.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Transactional
+    @Test
+    void shouldValidateAndSaveSolution_taskAlreadySolved() {
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
+        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_002");
+        assertThat(response).isTrue();
+        Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
+        assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002");
+    }
+
+    @Sql(
+            scripts = "/db/userSolvedTasks.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Transactional
+    @Test
+    void shouldValidateAndSaveSolution_taskNotFound() {
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
+        assertThatThrownBy(() -> userService.validateAndSaveSolution(authentication, "tangram_004"))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Task tangram_004 was not found");
+    }
+
+    @Sql(
+            scripts = "/db/userSolvedTasks.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Transactional
+    @Test
+    void shouldValidateAndSaveSolution_userNotAuthenticated() {
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
+        authentication.setAuthenticated(false);
+        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_003");
+        assertThat(response).isTrue();
+        Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
+        assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002");
     }
 
     private Authentication getAuthentication(Long id) {

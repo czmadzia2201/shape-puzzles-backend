@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS game_type
 (
     name VARCHAR(25) NOT NULL,
     display_name VARCHAR(25) NOT NULL,
+    base_shape JSONB NOT NULL,
+    unit_size DOUBLE PRECISION NOT NULL,
     CONSTRAINT game_type_pkey PRIMARY KEY (name)
 );
 

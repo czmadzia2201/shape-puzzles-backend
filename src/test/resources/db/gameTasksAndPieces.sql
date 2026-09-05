@@ -1,30 +1,30 @@
 -- Game types
-INSERT INTO game_type (name, display_name)
+INSERT INTO game_type (name, display_name, base_shape, unit_size)
 VALUES
-    ('tangram', 'Tangram'),
-    ('house', 'House'),
-    ('t', 'T');
+    ('tangram', 'Tangram', '[]', 50.0),
+    ('house', 'House', '[]', 50.0),
+    ('t', 'T', '[]', 50.0);
 
 
 -- Pieces: tangram
 INSERT INTO piece (id, game_type_name, start_point, vertices)
 VALUES
-    ('tangram_piece_1', 'tangram', '{"x": 0, "y": 0}', '[]'),
-    ('tangram_piece_2', 'tangram', '{"x": 2, "y": 0}', '[]'),
-    ('tangram_piece_3', 'tangram', '{"x": 4, "y": 0}', '[]');
+    ('tangram_piece_1', 'tangram', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]'),
+    ('tangram_piece_2', 'tangram', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]'),
+    ('tangram_piece_3', 'tangram', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]');
 
 
 -- Pieces: house
 INSERT INTO piece (id, game_type_name, start_point, vertices)
 VALUES
-    ('house_piece_1', 'house', '{"x": 0, "y": 0}', '[]'),
-    ('house_piece_2', 'house', '{"x": 2, "y": 0}', '[]');
+    ('house_piece_1', 'house', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]'),
+    ('house_piece_2', 'house', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]');
 
 
 -- Pieces: T
 INSERT INTO piece (id, game_type_name, start_point, vertices)
 VALUES
-    ('t_piece_1', 't', '{"x": 0, "y": 0}', '[]');
+    ('t_piece_1', 't', '{"x": {"constant": 0}, "y": {"constant": 0}}', '[]');
 
 
 -- Tasks: tangram

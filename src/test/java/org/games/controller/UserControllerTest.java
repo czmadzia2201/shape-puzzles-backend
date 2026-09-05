@@ -1,6 +1,7 @@
 package org.games.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.games.dto.RegisterUserRequest;
 import org.games.dto.SyncSolvedTasksRequest;
 import org.games.exception.UserNotFoundException;
@@ -95,21 +96,21 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldDeleteUser() throws Exception {
-        Authentication authentication = getAuthentication(1L);
-        mockMvc.perform(delete("/users/me")
-                        .principal(authentication))
-                .andExpect(status().isOk());
-        verify(userService).deactivateUser(authentication);
-    }
-
-    @Test
     void shouldCheckCurrentUser() throws Exception {
         Authentication authentication = getAuthentication(1L);
         mockMvc.perform(get("/users/me")
                         .principal(authentication))
                 .andExpect(status().isOk());
         verifyNoInteractions(userService);
+    }
+
+    @Test
+    void shouldDeleteUser() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        mockMvc.perform(delete("/users/me")
+                        .principal(authentication))
+                .andExpect(status().isOk());
+        verify(userService).deactivateUser(authentication);
     }
 
     @Test
@@ -125,7 +126,7 @@ class UserControllerTest {
     @Test
     void shouldGetUserSolvedTasks() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        GameType tangram = new GameType("tangram", "Tangram", Set.of(), Set.of());
+        GameType tangram = new GameType("tangram", "Tangram", Set.of(), Set.of(), List.of(), 50);
         when(userService.getUserSolvedTasks(authentication, "tangram")).thenReturn(Set.of(
                 new Task("tg1", tangram, List.of()),
                 new Task("tg2", tangram, List.of()),
@@ -136,6 +137,27 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id")
                         .value(containsInAnyOrder("tg1", "tg2", "tg3")));
+    }
+
+    @Test
+    void shouldValidateAndSaveSolution() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        when(userService.validateAndSaveSolution(authentication, "tg1")).thenReturn(true);
+        mockMvc.perform(post("/users/solved-tasks/tg1")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("true"));
+    }
+
+    @Test
+    void shouldNotValidateAndSaveSolution_taskNotFound() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        when(userService.validateAndSaveSolution(authentication, "tg1"))
+                .thenThrow(new EntityNotFoundException("Task tg1 was not found"));
+        mockMvc.perform(post("/users/solved-tasks/tg1")
+                        .principal(authentication))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Task tg1 was not found"));
     }
 
     @Test
