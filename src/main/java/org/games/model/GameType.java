@@ -25,6 +25,7 @@ public class GameType {
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
     private Set<Piece> pieces;
 
+    @OrderBy("id ASC")
     @OneToMany(mappedBy = "gameType", cascade = CascadeType.ALL)
     private Set<Task> tasks;
 
