@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.games.dto.RegisterUserRequest;
 import org.games.dto.RegisterUserResponse;
 import org.games.dto.SyncSolvedTasksRequest;
+import org.games.dto.VerifySolutionRequest;
 import org.games.model.Task;
 import org.games.model.UserData;
 import org.games.service.UserService;
@@ -38,9 +39,9 @@ public class UserController {
         return userService.getUserSolvedTasks(authentication, gameTypeId);
     }
 
-    @PostMapping("/solved-tasks/{taskId}")
-    public boolean validateAndSaveSolution(Authentication authentication, @PathVariable String taskId) {
-        return userService.validateAndSaveSolution(authentication, taskId);
+    @PostMapping("/solved-tasks")
+    public boolean validateAndSaveSolution(Authentication authentication, @RequestBody VerifySolutionRequest request) {
+        return userService.validateAndSaveSolution(authentication, request);
     }
 
     @GetMapping("/me")

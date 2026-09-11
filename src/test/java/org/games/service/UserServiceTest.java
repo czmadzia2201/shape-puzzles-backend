@@ -1,6 +1,9 @@
 package org.games.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.games.dto.GeometryPoint;
+import org.games.dto.PiecePlacement;
+import org.games.dto.VerifySolutionRequest;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
@@ -26,6 +29,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.games.service.GeometryTestHelper.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -176,7 +180,7 @@ class UserServiceTest extends BaseRepositoryTest {
     void shouldValidateAndSaveSolution() {
         UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
         Authentication authentication = getAuthentication(user.getId());
-        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_003");
+        Boolean response = userService.validateAndSaveSolution(authentication, correctSolutionRequest("tangram_003"));
         assertThat(response).isTrue();
         Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
         assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002", "tangram_003");
@@ -188,10 +192,25 @@ class UserServiceTest extends BaseRepositoryTest {
     )
     @Transactional
     @Test
+    void shouldValidateAndSaveSolution_incorrectSolution() {
+        UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
+        Authentication authentication = getAuthentication(user.getId());
+        Boolean response = userService.validateAndSaveSolution(authentication, incorrectSolutionRequest("tangram_003"));
+        assertThat(response).isFalse();
+        Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
+        assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002");
+    }
+
+    @Sql(
+            scripts = "/db/userSolvedTasks.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Transactional
+    @Test
     void shouldValidateAndSaveSolution_taskAlreadySolved() {
         UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
         Authentication authentication = getAuthentication(user.getId());
-        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_002");
+        Boolean response = userService.validateAndSaveSolution(authentication, correctSolutionRequest("tangram_002"));
         assertThat(response).isTrue();
         Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
         assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002");
@@ -206,7 +225,7 @@ class UserServiceTest extends BaseRepositoryTest {
     void shouldValidateAndSaveSolution_taskNotFound() {
         UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
         Authentication authentication = getAuthentication(user.getId());
-        assertThatThrownBy(() -> userService.validateAndSaveSolution(authentication, "tangram_004"))
+        assertThatThrownBy(() -> userService.validateAndSaveSolution(authentication, correctSolutionRequest("tangram_004")))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Task tangram_004 was not found");
     }
@@ -221,7 +240,7 @@ class UserServiceTest extends BaseRepositoryTest {
         UserData user = userDataRepository.findByUsernameAndActiveTrue("user1").get();
         Authentication authentication = getAuthentication(user.getId());
         authentication.setAuthenticated(false);
-        Boolean response = userService.validateAndSaveSolution(authentication, "tangram_003");
+        Boolean response = userService.validateAndSaveSolution(authentication, correctSolutionRequest("tangram_003"));
         assertThat(response).isTrue();
         Set<Task> userTasks = userService.getUserSolvedTasks(authentication, "tangram");
         assertThat(userTasks).extracting(Task::getId).containsExactlyInAnyOrder("tangram_001", "tangram_002");
@@ -229,6 +248,24 @@ class UserServiceTest extends BaseRepositoryTest {
 
     private Authentication getAuthentication(Long id) {
         return new UsernamePasswordAuthenticationToken(id.toString(), null, Collections.emptyList());
+    }
+
+    private VerifySolutionRequest correctSolutionRequest(String taskId) {
+        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
+        List< PiecePlacement > pieces = List.of(
+                piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
+                piece("piece_2", point(2, 0), point(4, 0), point(4, 4), point(2, 4))
+        );
+        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
+    }
+
+    private VerifySolutionRequest incorrectSolutionRequest(String taskId) {
+        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
+        List< PiecePlacement > pieces = List.of(
+                piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
+                piece("piece_2", point(1, 0), point(3, 0), point(3, 4), point(1, 4)) // Overlaps with piece_1
+        );
+        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
     }
 
 }

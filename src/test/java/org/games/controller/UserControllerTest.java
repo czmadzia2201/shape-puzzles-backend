@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.games.dto.RegisterUserRequest;
 import org.games.dto.SyncSolvedTasksRequest;
+import org.games.dto.VerifySolutionRequest;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.GameType;
@@ -142,9 +143,12 @@ class UserControllerTest {
     @Test
     void shouldValidateAndSaveSolution() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        when(userService.validateAndSaveSolution(authentication, "tg1")).thenReturn(true);
-        mockMvc.perform(post("/users/solved-tasks/tg1")
-                        .principal(authentication))
+        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
+        when(userService.validateAndSaveSolution(authentication, request)).thenReturn(true);
+        mockMvc.perform(post("/users/solved-tasks")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value("true"));
     }
@@ -152,10 +156,13 @@ class UserControllerTest {
     @Test
     void shouldNotValidateAndSaveSolution_taskNotFound() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        when(userService.validateAndSaveSolution(authentication, "tg1"))
+        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
+        when(userService.validateAndSaveSolution(authentication, request))
                 .thenThrow(new EntityNotFoundException("Task tg1 was not found"));
-        mockMvc.perform(post("/users/solved-tasks/tg1")
-                        .principal(authentication))
+        mockMvc.perform(post("/users/solved-tasks")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Task tg1 was not found"));
     }

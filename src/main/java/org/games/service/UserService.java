@@ -2,6 +2,7 @@ package org.games.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.games.dto.VerifySolutionRequest;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.Task;
@@ -24,6 +25,7 @@ public class UserService {
     private final UserDataRepository userDataRepository;
     private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SolutionValidator solutionValidator;
 
     public UserData registerUser(String username, String password) {
         UserData user = new UserData();
@@ -46,12 +48,12 @@ public class UserService {
         return userDataRepository.findUserSolvedTasksByGameType(userId, gameTypeId);
     }
 
-    public boolean validateAndSaveSolution(Authentication authentication, String taskId) {
-        boolean isSolutionCorrect = true; // TODO: algorytm obliczania czy solution jest correct, pewnie będą potrzebne współrzędne
+    public boolean validateAndSaveSolution(Authentication authentication, VerifySolutionRequest request) {
+        boolean isSolutionCorrect = solutionValidator.validate(request);
         if (isSolutionCorrect && isUserAuthenticated(authentication)) {
             UserData userData = getUserData(authentication);
-            Task task = taskRepository.findById(taskId)
-                    .orElseThrow(() -> new EntityNotFoundException("Task %s was not found".formatted(taskId)));
+            Task task = taskRepository.findById(request.taskId())
+                    .orElseThrow(() -> new EntityNotFoundException("Task %s was not found".formatted(request.taskId())));
             userData.getSolvedTasks().add(task);
             userDataRepository.save(userData);
         }
