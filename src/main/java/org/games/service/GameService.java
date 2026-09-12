@@ -18,11 +18,10 @@ public class GameService {
 
     public List<GameTypeSummaryDto> getAllGameTypes() {
         List<GameType> allGameTypes = gameTypeRepository.findAll();
-        List<GameTypeSummaryDto> gameTypeSummaries = allGameTypes.stream()
+        return allGameTypes.stream()
                 .map(gt -> new GameTypeSummaryDto(gt.getName(), gt.getDisplayName()))
                 .sorted(Comparator.comparing(GameTypeSummaryDto::name))
                 .toList();
-        return gameTypeSummaries;
     }
 
     public GameType getGameType(String gameTypeId) {

@@ -2,9 +2,7 @@ package org.games.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.games.dto.RegisterUserRequest;
-import org.games.dto.SyncSolvedTasksRequest;
-import org.games.dto.VerifySolutionRequest;
+import org.games.dto.*;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
 import org.games.model.GameType;
@@ -25,6 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static org.games.GeometryTestHelper.*;
+import static org.games.GeometryTestHelper.piece;
+import static org.games.GeometryTestHelper.point;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -143,7 +144,7 @@ class UserControllerTest {
     @Test
     void shouldValidateAndSaveSolution() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
+        VerifySolutionRequest request = createSolutionRequest("tg1");
         when(userService.validateAndSaveSolution(authentication, request)).thenReturn(true);
         mockMvc.perform(post("/users/solved-tasks")
                         .principal(authentication)
@@ -156,7 +157,7 @@ class UserControllerTest {
     @Test
     void shouldNotValidateAndSaveSolution_taskNotFound() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
+        VerifySolutionRequest request = createSolutionRequest("tg1");
         when(userService.validateAndSaveSolution(authentication, request))
                 .thenThrow(new EntityNotFoundException("Task tg1 was not found"));
         mockMvc.perform(post("/users/solved-tasks")
@@ -165,6 +166,66 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Task tg1 was not found"));
+    }
+
+    @Test
+    void shouldNotValidateAndSaveSolution_emptyPieces() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
+                mockMvc.perform(post("/users/solved-tasks")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void shouldNotValidateAndSaveSolution_blankTaskId() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        VerifySolutionRequest request = createSolutionRequest("   ");
+        mockMvc.perform(post("/users/solved-tasks")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void shouldNotValidateAndSaveSolution_missingVerticesField() throws Exception {
+        Authentication authentication = getAuthentication(1L);
+        VerifySolutionRequest request = createSolutionRequest("   ");
+        mockMvc.perform(post("/users/solved-tasks")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenPiecesAreEmpty() throws Exception {
+        String body = """
+        {
+          "taskId": "tg1",
+          "pieces": [
+            {
+              "id": "tg01",
+              "vertices": [
+                {
+                  "x": 1.0
+                }
+              ]
+            }
+          ]
+        }
+        """;
+        mockMvc.perform(post("/users/solved-tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(userService);
     }
 
     @Test
@@ -193,6 +254,15 @@ class UserControllerTest {
 
     private Authentication getAuthentication(Long id) {
         return new UsernamePasswordAuthenticationToken(id.toString(), null, Collections.emptyList());
+    }
+
+    private VerifySolutionRequest createSolutionRequest(String taskId) {
+        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
+        List<PiecePlacement> pieces = List.of(
+                piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
+                piece("piece_2", point(2, 0), point(4, 0), point(4, 4), point(2, 4))
+        );
+        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
     }
 
 }

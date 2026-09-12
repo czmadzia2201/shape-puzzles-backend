@@ -13,7 +13,4 @@ public interface GameTypeRepository extends JpaRepository<GameType, String> {
     @EntityGraph(attributePaths = {"pieces", "tasks"})
     @Query("SELECT g FROM GameType g WHERE g.name = :gameTypeId")
     Optional<GameType> findByIdWithDetails(String gameTypeId);
-
-    List<GameType> findAll();
-
 }

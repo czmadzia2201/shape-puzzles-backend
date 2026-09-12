@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @PostMapping("/solved-tasks")
-    public boolean validateAndSaveSolution(Authentication authentication, @RequestBody VerifySolutionRequest request) {
+    public boolean validateAndSaveSolution(Authentication authentication, @RequestBody @Valid VerifySolutionRequest request) {
         return userService.validateAndSaveSolution(authentication, request);
     }
 

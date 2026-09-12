@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ public class UserService {
         return userDataRepository.findUserSolvedTasksByGameType(userId, gameTypeId);
     }
 
+    @Transactional
     public boolean validateAndSaveSolution(Authentication authentication, VerifySolutionRequest request) {
         boolean isSolutionCorrect = solutionValidator.validate(request);
         if (isSolutionCorrect && isUserAuthenticated(authentication)) {
@@ -60,12 +62,14 @@ public class UserService {
         return isSolutionCorrect;
     }
 
+    @Transactional
     public void deactivateUser(Authentication authentication) {
         UserData userData = getUserData(authentication);
         userData.setActive(false);
         userDataRepository.save(userData);
     }
 
+    @Transactional
     public void syncSolvedTasks(Authentication authentication, List<String> taskIds) {
         UserData userData = getUserData(authentication);
         Set<Task> solvedTasks = userData.getSolvedTasks();
