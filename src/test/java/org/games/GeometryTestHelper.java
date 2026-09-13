@@ -1,10 +1,13 @@
 package org.games;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.games.dto.GeometryPoint;
 import org.games.dto.PiecePlacement;
 
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GeometryTestHelper {
 
     public static PiecePlacement piece(String id, GeometryPoint... points) {

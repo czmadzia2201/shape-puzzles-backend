@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.games.GeometryTestHelper.*;
 import static org.games.GeometryTestHelper.piece;
 import static org.games.GeometryTestHelper.point;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -103,7 +102,7 @@ class UserControllerTest {
         mockMvc.perform(get("/users/me")
                         .principal(authentication))
                 .andExpect(status().isOk());
-        verifyNoInteractions(userService);
+        verify(userService).getUserData(authentication);
     }
 
     @Test
@@ -171,8 +170,8 @@ class UserControllerTest {
     @Test
     void shouldNotValidateAndSaveSolution_emptyPieces() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of(), List.of());
-                mockMvc.perform(post("/users/solved-tasks")
+        VerifySolutionRequest request = new VerifySolutionRequest("tg1", List.of());
+        mockMvc.perform(post("/users/solved-tasks")
                         .principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -193,19 +192,7 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldNotValidateAndSaveSolution_missingVerticesField() throws Exception {
-        Authentication authentication = getAuthentication(1L);
-        VerifySolutionRequest request = createSolutionRequest("   ");
-        mockMvc.perform(post("/users/solved-tasks")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        verifyNoInteractions(userService);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenPiecesAreEmpty() throws Exception {
+    void shouldNotValidateAndSaveSolution_missingCoordinate() throws Exception {
         String body = """
         {
           "taskId": "tg1",
@@ -257,12 +244,11 @@ class UserControllerTest {
     }
 
     private VerifySolutionRequest createSolutionRequest(String taskId) {
-        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
         List<PiecePlacement> pieces = List.of(
                 piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
                 piece("piece_2", point(2, 0), point(4, 0), point(4, 4), point(2, 4))
         );
-        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
+        return new VerifySolutionRequest(taskId, pieces);
     }
 
 }

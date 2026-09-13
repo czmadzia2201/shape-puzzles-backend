@@ -41,7 +41,6 @@ class GameControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("game_type_1"))
                 .andExpect(jsonPath("$[0].displayName").value("GameType1"));
-        ;
     }
 
     @Test

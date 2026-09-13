@@ -35,7 +35,7 @@ public class UserController {
 
     @GetMapping("/me/solved-tasks/{gameTypeId}")
     @SecurityRequirement(name = "bearerAuth")
-    public Set<Task> findUserSolvedTasks(Authentication authentication, @PathVariable String gameTypeId) {
+    public Set<Task> getUserSolvedTasks(Authentication authentication, @PathVariable String gameTypeId) {
         return userService.getUserSolvedTasks(authentication, gameTypeId);
     }
 
@@ -46,7 +46,8 @@ public class UserController {
 
     @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
-    public void checkCurrentUser() {
+    public void checkCurrentUser(Authentication authentication) {
+        userService.getUserData(authentication);
     }
 
     @DeleteMapping("/me")

@@ -1,7 +1,6 @@
 package org.games.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.games.dto.GeometryPoint;
 import org.games.dto.PiecePlacement;
 import org.games.dto.VerifySolutionRequest;
 import org.games.exception.UserNotFoundException;
@@ -251,21 +250,19 @@ class UserServiceTest extends BaseRepositoryTest {
     }
 
     private VerifySolutionRequest correctSolutionRequest(String taskId) {
-        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
-        List< PiecePlacement > pieces = List.of(
+        List<PiecePlacement> pieces = List.of(
                 piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
                 piece("piece_2", point(2, 0), point(4, 0), point(4, 4), point(2, 4))
         );
-        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
+        return new VerifySolutionRequest(taskId, pieces);
     }
 
     private VerifySolutionRequest incorrectSolutionRequest(String taskId) {
-        List<List<GeometryPoint>> taskPolygons = List.of(square(0, 0, 4, 4));
         List<PiecePlacement> pieces = List.of(
                 piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
                 piece("piece_2", point(1, 0), point(3, 0), point(3, 4), point(1, 4)) // Overlaps with piece_1
         );
-        return new VerifySolutionRequest(taskId, taskPolygons, pieces);
+        return new VerifySolutionRequest(taskId, pieces);
     }
 
 }

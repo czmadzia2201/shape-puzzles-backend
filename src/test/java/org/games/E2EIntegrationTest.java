@@ -17,6 +17,8 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.games.GeometryTestHelper.piece;
+import static org.games.GeometryTestHelper.point;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "jwt.secret=test-secret-with-at-least-thirty-two-bytes")
@@ -81,6 +83,56 @@ class E2EIntegrationTest extends BaseRepositoryTest {
         List<String> solvedTaskIds = solvedTasksResponse.getBody().findValuesAsText("id");
         assertThat(solvedTaskIds).containsExactlyInAnyOrder("tangram_001", "tangram_002");
 
+        ResponseEntity<Boolean> incorrectSolutionResponse = restTemplate.exchange(
+                "/users/solved-tasks",
+                HttpMethod.POST,
+                authorizedRequest(accessToken, incorrectSolutionRequest("tangram_003")),
+                Boolean.class
+        );
+
+        assertThat(incorrectSolutionResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(incorrectSolutionResponse.getBody()).isFalse();
+
+        ResponseEntity<JsonNode> solvedTasksAfterIncorrectSolutionResponse = restTemplate.exchange(
+                "/users/me/solved-tasks/tangram",
+                HttpMethod.GET,
+                authorizedRequest(accessToken, null),
+                JsonNode.class
+        );
+
+        assertThat(solvedTasksAfterIncorrectSolutionResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        List<String> solvedTaskIdsAfterIncorrectSolution =
+                solvedTasksAfterIncorrectSolutionResponse.getBody().findValuesAsText("id");
+
+        assertThat(solvedTaskIdsAfterIncorrectSolution).containsExactlyInAnyOrder("tangram_001", "tangram_002");
+
+
+        ResponseEntity<Boolean> correctSolutionResponse = restTemplate.exchange(
+                "/users/solved-tasks",
+                HttpMethod.POST,
+                authorizedRequest(accessToken, correctSolutionRequest("tangram_003")),
+                Boolean.class
+        );
+
+        assertThat(correctSolutionResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(correctSolutionResponse.getBody()).isTrue();
+
+        ResponseEntity<JsonNode> solvedTasksAfterCorrectSolutionResponse = restTemplate.exchange(
+                "/users/me/solved-tasks/tangram",
+                HttpMethod.GET,
+                authorizedRequest(accessToken, null),
+                JsonNode.class
+        );
+
+        assertThat(solvedTasksAfterCorrectSolutionResponse.getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+
+        List<String> solvedTaskIdsAfterCorrectSolution =
+                solvedTasksAfterCorrectSolutionResponse.getBody().findValuesAsText("id");
+
+        assertThat(solvedTaskIdsAfterCorrectSolution).containsExactlyInAnyOrder("tangram_001", "tangram_002", "tangram_003");
+
         ResponseEntity<RefreshResponse> refreshResponse = restTemplate.postForEntity(
                 "/auth/refresh",
                 new RefreshRequest(refreshToken),
@@ -115,4 +167,20 @@ class E2EIntegrationTest extends BaseRepositoryTest {
         headers.setBearerAuth(accessToken);
         return new HttpEntity<>(body, headers);
     }
+
+    private VerifySolutionRequest correctSolutionRequest(String taskId) {
+        List<PiecePlacement> pieces = List.of(
+                piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4)),
+                piece("piece_2", point(2, 0), point(4, 0), point(4, 4), point(2, 4))
+        );
+        return new VerifySolutionRequest(taskId, pieces);
+    }
+
+    private VerifySolutionRequest incorrectSolutionRequest(String taskId) {
+        List<PiecePlacement> pieces = List.of(
+                piece("piece_1", point(0, 0), point(2, 0), point(2, 4), point(0, 4))
+        );
+        return new VerifySolutionRequest(taskId, pieces);
+    }
+
 }

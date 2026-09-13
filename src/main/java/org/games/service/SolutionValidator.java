@@ -1,7 +1,7 @@
 package org.games.service;
 
 import org.games.dto.GeometryPoint;
-import org.games.dto.VerifySolutionRequest;
+import org.games.dto.PiecePlacement;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -17,17 +17,10 @@ public class SolutionValidator {
 
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    public boolean validate(VerifySolutionRequest request) {
-        if (request.taskPolygons() == null
-                || request.taskPolygons().isEmpty()
-                || request.pieces() == null
-                || request.pieces().isEmpty()) {
-            return false;
-        }
+    public boolean validate(List<List<GeometryPoint>> taskPolygons, List<PiecePlacement> piecePlacements) {
+        Geometry task = createTaskGeometry(taskPolygons);
 
-        Geometry task = createTaskGeometry(request.taskPolygons());
-
-        List<Polygon> pieces = request.pieces().stream()
+        List<Polygon> pieces = piecePlacements.stream()
                 .map(piece -> createPolygon(piece.vertices()))
                 .toList();
 

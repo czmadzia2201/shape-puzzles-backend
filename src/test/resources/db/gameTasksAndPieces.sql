@@ -32,7 +32,26 @@ INSERT INTO task (id, game_type_name, polygons)
 VALUES
     ('tangram_001', 'tangram', '[]'),
     ('tangram_002', 'tangram', '[]'),
-    ('tangram_003', 'tangram', '[]');
+    ('tangram_003', 'tangram', '[
+          [
+            {
+              "x": { "constant": 0 },
+              "y": { "constant": 0 }
+            },
+            {
+              "x": { "constant": 4 },
+              "y": { "constant": 0 }
+            },
+            {
+              "x": { "constant": 4 },
+              "y": { "constant": 4 }
+            },
+            {
+              "x": { "constant": 0 },
+              "y": { "constant": 4 }
+            }
+          ]
+        ]');
 
 
 -- Tasks: house

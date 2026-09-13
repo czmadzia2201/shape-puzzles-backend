@@ -2,9 +2,12 @@ package org.games.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.games.dto.GeometryPoint;
 import org.games.dto.VerifySolutionRequest;
 import org.games.exception.UserNotFoundException;
 import org.games.exception.UsernameAlreadyExistsException;
+import org.games.model.CoordinateValue;
+import org.games.model.Point;
 import org.games.model.Task;
 import org.games.model.UserData;
 import org.games.repository.TaskRepository;
@@ -51,11 +54,14 @@ public class UserService {
 
     @Transactional
     public boolean validateAndSaveSolution(Authentication authentication, VerifySolutionRequest request) {
-        boolean isSolutionCorrect = solutionValidator.validate(request);
+        Task task = taskRepository.findById(request.taskId())
+                .orElseThrow(() -> new EntityNotFoundException("Task %s was not found".formatted(request.taskId())));
+        List<List<GeometryPoint>> taskPolygons = toGeometryPolygons(task.getPolygons());
+
+        boolean isSolutionCorrect = solutionValidator.validate(taskPolygons, request.pieces());
+
         if (isSolutionCorrect && isUserAuthenticated(authentication)) {
             UserData userData = getUserData(authentication);
-            Task task = taskRepository.findById(request.taskId())
-                    .orElseThrow(() -> new EntityNotFoundException("Task %s was not found".formatted(request.taskId())));
             userData.getSolvedTasks().add(task);
             userDataRepository.save(userData);
         }
@@ -78,7 +84,7 @@ public class UserService {
         userDataRepository.save(userData);
     }
 
-    private UserData getUserData(Authentication authentication) {
+    public UserData getUserData(Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         return userDataRepository.findByIdAndActiveTrue(userId)
                 .orElseThrow(() -> new UserNotFoundException(
@@ -91,4 +97,19 @@ public class UserService {
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
     }
+
+    private List<List<GeometryPoint>> toGeometryPolygons(List<List<Point>> polygons) {
+        return polygons.stream()
+                .map(polygon -> polygon.stream()
+                        .map(point -> new GeometryPoint(coordinateToNumber(point.x()), coordinateToNumber(point.y())))
+                        .toList())
+                .toList();
+    }
+
+    private double coordinateToNumber(CoordinateValue coordinate) {
+        return (coordinate.constant() == null ? 0 : coordinate.constant())
+                + (coordinate.sqrt2() == null ? 0 : coordinate.sqrt2()) * Math.sqrt(2)
+                + (coordinate.sqrt3() == null ? 0 : coordinate.sqrt3()) * Math.sqrt(3);
+    }
+
 }
