@@ -1,9 +1,9 @@
 -- Game types
-INSERT INTO game_type (name, display_name, base_shape, unit_size)
+INSERT INTO game_type (name, display_name, base_shape, unit_size, description)
 VALUES
-    ('tangram', 'Tangram', '[]', 50.0),
-    ('house', 'House', '[]', 50.0),
-    ('t', 'T', '[]', 50.0);
+    ('tangram', 'Tangram', '[]', 50.0, 'tangram description'),
+    ('house', 'House', '[]', 50.0, 'house description'),
+    ('t', 'T', '[]', 50.0, 't description');
 
 
 -- Pieces: tangram

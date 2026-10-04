@@ -127,7 +127,8 @@ class UserControllerTest {
     @Test
     void shouldGetUserSolvedTasks() throws Exception {
         Authentication authentication = getAuthentication(1L);
-        GameType tangram = new GameType("tangram", "Tangram", Set.of(), Set.of(), List.of(), 50);
+        GameType tangram = new GameType("tangram", "Tangram",
+                Set.of(), Set.of(), List.of(), 50, "Tangram description");
         when(userService.getUserSolvedTasks(authentication, "tangram")).thenReturn(Set.of(
                 new Task("tg1", tangram, List.of()),
                 new Task("tg2", tangram, List.of()),

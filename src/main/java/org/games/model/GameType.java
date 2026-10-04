@@ -35,4 +35,6 @@ public class GameType {
 
     private double unitSize;
 
+    private String description;
+
 }

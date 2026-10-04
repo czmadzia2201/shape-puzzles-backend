@@ -46,7 +46,8 @@ class GameControllerTest {
     @Test
     void shouldReturnGameTypeById() throws Exception {
         when(gameService.getGameType("game_type_1"))
-                .thenReturn(new GameType("game_type_1", "GameType1", Set.of(), Set.of(), List.of(), 50));
+                .thenReturn(new GameType("game_type_1", "GameType1",
+                        Set.of(), Set.of(), List.of(), 50, "Description"));
         mockMvc.perform(get("/game-types/game_type_1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("game_type_1"));
