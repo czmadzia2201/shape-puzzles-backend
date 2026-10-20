@@ -65,7 +65,7 @@ npm start
 ```
 
 ### Swagger
-http://localhost:8080/shape-puzzles/swagger-ui/index.html
+http://localhost:8080/shape-puzzles/api/swagger-ui/index.html
 
 ---
 
